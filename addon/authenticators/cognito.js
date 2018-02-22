@@ -6,7 +6,11 @@ import { getProperties, get, set } from '@ember/object';
 import { AuthenticationDetails } from 'amazon-cognito-identity-js';
 import {
   CognitoUser as AWSCognitoUser,
-  CognitoUserPool
+  CognitoUserPool,
+  CognitoUserSession,
+  CognitoIdToken,
+  CognitoAccessToken,
+  CognitoRefreshToken
 } from 'amazon-cognito-identity-js';
 import Base from 'ember-simple-auth/authenticators/base';
 import CognitoStorage from '../utils/cognito-storage';
@@ -111,8 +115,34 @@ export default Base.extend({
     }
   },
 
+  _handleParsedQueryHash(pqh) {
+    return new Promise((resolve) => {
+      let that = this;
+      let { poolId, clientId } = getProperties(this, 'poolId', 'clientId');
+      let pool = new CognitoUserPool({
+        UserPoolId: poolId,
+        ClientId: clientId,
+        Storage: new CognitoStorage({})
+      });
+      let idToken = new CognitoIdToken({ IdToken: pqh.id_token });
+      let user = this._stubUser(new AWSCognitoUser({ Username: idToken.payload['cognito:username'], Pool: pool, Storage: pool.storage }));
+      let sess = new CognitoUserSession({
+        ClockDrift: 0,
+        IdToken: idToken,
+        RefreshToken: new CognitoRefreshToken(),
+        AccessToken: new CognitoAccessToken({ AccessToken:pqh.access_token })
+      });
+      user.setSignInUserSession(sess);
+      that._resolveAuth(resolve, sess, { pool, user });
+    }, 'cognito:authenticate');
+  },
+
   authenticate(params) {
     let { username, password, state } = params;
+
+    if (window.parsedQueryHash) {
+      return this._handleParsedQueryHash(window.parsedQueryHash);
+    }    
     if (state) {
       return this._handleState(state.name, params);
     }
