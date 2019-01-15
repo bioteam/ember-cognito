@@ -16,6 +16,10 @@ export function initialize() {
     var urlObj = parseQueryString(document.location.hash.substring(1));
     
     window.parsedQueryHash = urlObj;
+  } else if ( document.location.search.substring(1) !== "" ) {
+    var urlObj = parseQueryString(document.location.search.substring(1));
+
+    window.parsedQueryHash = urlObj;
   } else {
     window.parsedQueryHash = null;
   }
