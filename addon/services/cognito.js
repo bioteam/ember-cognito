@@ -5,6 +5,7 @@ import CognitoStorage from '../utils/cognito-storage';
 import CognitoUser from '../utils/cognito-user';
 import { later, cancel } from '@ember/runloop';
 import { inject as service } from '@ember/service';
+import { sha256 } from 'js-sha256';
 
 /**
  * @public
@@ -83,5 +84,31 @@ export default Service.extend({
     if (user) {
       return this.get('session').authenticate('authenticator:cognito', { state: { name: 'refresh' } });
     }
+  },
+
+  getOAuthUrl(responseType = 'code', idpName, scope) {
+    let { hostedBase, clientId } = this.getProperties('hostedBase', 'clientId');
+    let url = (
+      hostedBase + '/oauth2/authorize'
+        + '?response_type=' + responseType
+        + '&client_id=' + clientId
+        + '&redirect_uri=' + redirectUri
+        + '&state=notYetRandom'
+    );
+    if (responseType === 'code') {
+      let code = Math.random().toString(32);
+      this.set('oauthCode', code);
+      let code_hash = btoa(sha256(code));
+      url += '&code_challenge_method=S256&code_challenge=' + code_hash;
+    }
+    
+    if (idpName) {
+      url += '&identity_provider=' + idpName;
+    }
+    if (scope) {
+      url += '&scope=' + scope;
+    }
+    return url;
   }
+  
 });

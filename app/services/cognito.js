@@ -9,5 +9,6 @@ const cognitoEnv = merge({
 export default CognitoService.extend({
   poolId: cognitoEnv.poolId,
   clientId: cognitoEnv.clientId,
+  hostedBase: cognitoEnv.hostedBase,
   autoRefreshSession: cognitoEnv.autoRefreshSession
 });

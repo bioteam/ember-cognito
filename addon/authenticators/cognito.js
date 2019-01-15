@@ -115,6 +115,32 @@ export default Base.extend({
     }
   },
 
+  _getTokensFromCode(code) {
+    return new Promise((resolve, reject) => {
+      let formData = ("grant_type=authorization_code"
+                      + "&code=" + code
+                      + "&client_id=" + get(this, 'cognito.clientId')
+                      + "&redirect_uri=http://localhost:4200/login");
+      let url = get(this, 'cognito.hostedBase') + '/oauth2/token';
+      let client = new XMLHttpRequest();
+      client.open("POST", url);
+      client.responseType = "json";
+      client.setRequestHeader('Content-type',
+                              'application/x-www-form-urlencoded');
+      client.setRequestHeader("Accept", "application/json");
+      client.onreadystatechange = () => {
+        if (client.readyState === client.DONE) {
+          if (client.status === 200) {
+            resolve(client.response);
+          } else {
+            reject(client);
+          }
+        }
+      };
+      client.send(formData);
+    });
+  },
+  
   _handleParsedQueryHash(pqh) {
     return new Promise((resolve) => {
       let that = this;
@@ -129,7 +155,7 @@ export default Base.extend({
       let sess = new CognitoUserSession({
         ClockDrift: 0,
         IdToken: idToken,
-        RefreshToken: new CognitoRefreshToken(),
+        RefreshToken: new CognitoRefreshToken({ RefreshToken:pqh.refresh_token }),
         AccessToken: new CognitoAccessToken({ AccessToken:pqh.access_token })
       });
       user.setSignInUserSession(sess);
@@ -141,7 +167,15 @@ export default Base.extend({
     let { username, password, state } = params;
 
     if (window.parsedQueryHash) {
-      return this._handleParsedQueryHash(window.parsedQueryHash);
+      if (window.parsedQueryHash.code) {
+        let that = this;
+        return this._getTokensFromCode(window.parsedQueryHash.code)
+          .then((json) => {
+            return that._handleParsedQueryHash(json);
+          });
+      } else {
+        return this._handleParsedQueryHash(window.parsedQueryHash);
+      }
     }    
     if (state) {
       return this._handleState(state.name, params);
