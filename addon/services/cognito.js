@@ -102,8 +102,8 @@ export default Service.extend({
       let code = codeArray.reduce(
         (a, b) => { return a + String.fromCharCode(b); },
         '');
-      this.set('oauthCode', code);
-      this.set('redirectUri', redirectUri);
+      window.sessionStorage.setItem('ember-cognito.oauthCode', code);
+      window.sessionStorage.setItem('ember-cognito.redirectUri', redirectUri);
       
       let code_hash = btoa(sha256(code));
       url += '&code_challenge_method=S256&code_challenge=' + code_hash;
@@ -120,8 +120,9 @@ export default Service.extend({
   },
 
   getOAuthTokenRequest(code) {
-    let { hostedBase, clientId, redirectUri, oauthCode } = this.getProperties(
-      'hostedBase', 'clientId', 'redirectUri', 'oauthCode');
+    let { hostedBase, clientId } = this.getProperties('hostedBase', 'clientId');
+    let redirectUri = window.sessionStorage.getItem('ember-cognito.redirectUri');
+    let oauthCode = window.sessionStorage.getItem('ember-cognito.oauthCode');
     
     return {
       url: hostedBase + '/oauth2/token',
