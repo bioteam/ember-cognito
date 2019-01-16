@@ -101,18 +101,18 @@ export default Service.extend({
     );
     if (responseType === 'code') {
       window.sessionStorage.setItem('ember-cognito.redirectUri', redirectUri);
-      let code = window.sessionStorage.getItem('ember-cognito.oauthCode');
-      if (! code) {
+      let codeVerifier = window.sessionStorage.getItem('ember-cognito.oauthCodeVerifier');
+      if (! codeVerifier) {
         // generate a random 32 byte string
         let codeArray = new Uint8Array(32);
         window.crypto.getRandomValues(codeArray);
-        code = codeArray.reduce(
+        codeVerifier = this._base64UrlEncoded(codeArray.reduce(
           (a, b) => { return a + String.fromCharCode(b); },
-          '');
-        window.sessionStorage.setItem('ember-cognito.oauthCode', code);
+          ''));
+        window.sessionStorage.setItem('ember-cognito.oauthCodeVerifier', codeVerifier);
       }
       let codeHash = sha256.create();
-      codeHash.update(code);
+      codeHash.update(codeVerifier);
 
       let codeEncoded = this._base64UrlEncoded(codeHash.array().reduce(
         (a, b) => { return a + String.fromCharCode(b); }, ''));
@@ -133,7 +133,7 @@ export default Service.extend({
   getOAuthTokenRequest(code) {
     let { hostedBase, clientId } = this.getProperties('hostedBase', 'clientId');
     let redirectUri = window.sessionStorage.getItem('ember-cognito.redirectUri');
-    let oauthCode = window.sessionStorage.getItem('ember-cognito.oauthCode');
+    let codeVerifier = window.sessionStorage.getItem('ember-cognito.oauthCodeVerifier');
     
     return {
       url: hostedBase + '/oauth2/token',
@@ -142,7 +142,7 @@ export default Service.extend({
           + '&code=' + code
           + '&client_id=' + clientId
           + '&redirect_uri=' + redirectUri
-          + '&code_verifier=' + this._base64UrlEncoded(oauthCode)
+          + '&code_verifier=' + codeVerifier
       )
     }
   }
