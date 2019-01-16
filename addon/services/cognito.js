@@ -86,7 +86,7 @@ export default Service.extend({
     }
   },
 
-  getOAuthUrl(responseType = 'code', idpName, scope) {
+  getOAuthUrl(responseType = 'code', redirectUri, idpName, scope) {
     let { hostedBase, clientId } = this.getProperties('hostedBase', 'clientId');
     let url = (
       hostedBase + '/oauth2/authorize'
@@ -108,6 +108,7 @@ export default Service.extend({
     if (scope) {
       url += '&scope=' + scope;
     }
+    
     return url;
   }
   

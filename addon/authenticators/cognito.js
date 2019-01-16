@@ -166,16 +166,14 @@ export default Base.extend({
   authenticate(params) {
     let { username, password, state } = params;
 
-    if (window.parsedQueryHash) {
-      if (window.parsedQueryHash.code) {
-        let that = this;
-        return this._getTokensFromCode(window.parsedQueryHash.code)
-          .then((json) => {
-            return that._handleParsedQueryHash(json);
-          });
-      } else {
-        return this._handleParsedQueryHash(window.parsedQueryHash);
-      }
+    if (window.parsedQueryHash.code) {
+      let that = this;
+      return this._getTokensFromCode(window.parsedQueryHash.code)
+        .then((json) => {
+          return that._handleParsedQueryHash(json);
+        });
+    } else if (window.parsedQueryHash.access_token) {
+      return this._handleParsedQueryHash(window.parsedQueryHash);
     }    
     if (state) {
       return this._handleState(state.name, params);

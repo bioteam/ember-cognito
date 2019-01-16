@@ -24,5 +24,6 @@ module.exports = {
     app.import('vendor/amazon-cognito-identity-js/aws-cognito-sdk.js');
     app.import('vendor/amazon-cognito-identity-js/amazon-cognito-identity.min.js');
     app.import('vendor/shims/amazon-cognito-identity-js.js');
+    app.import('vendor/shims/js-sha256.js');
   }
 };

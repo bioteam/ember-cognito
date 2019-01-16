@@ -17,9 +17,9 @@ export function initialize() {
     
     window.parsedQueryHash = urlObj;
   } else if ( document.location.search.substring(1) !== "" ) {
-    var urlObj = parseQueryString(document.location.search.substring(1));
+    var searchObj = parseQueryString(document.location.search.substring(1));
 
-    window.parsedQueryHash = urlObj;
+    window.parsedQueryHash = searchObj;
   } else {
     window.parsedQueryHash = null;
   }
