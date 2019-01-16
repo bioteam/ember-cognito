@@ -96,17 +96,24 @@ export default Service.extend({
         + '&state=notYetRandom'
     );
     if (responseType === 'code') {
-      // generate a random 32 byte string
-      let codeArray = new Uint8Array(32);
-      window.crypto.getRandomValues(codeArray);
-      let code = codeArray.reduce(
-        (a, b) => { return a + String.fromCharCode(b); },
-        '');
-      window.sessionStorage.setItem('ember-cognito.oauthCode', code);
       window.sessionStorage.setItem('ember-cognito.redirectUri', redirectUri);
-      
-      let code_hash = encodeURIComponent(btoa(sha256(code)));
-      url += '&code_challenge_method=S256&code_challenge=' + code_hash;
+      let code = window.sessionStorage.getItem('ember-cognito.oauthCode');
+      if (! code) {
+        // generate a random 32 byte string
+        let codeArray = new Uint8Array(32);
+        window.crypto.getRandomValues(codeArray);
+        code = codeArray.reduce(
+          (a, b) => { return a + String.fromCharCode(b); },
+          '');
+        window.sessionStorage.setItem('ember-cognito.oauthCode', code);
+      }
+      let codeHash = sha256.create();
+      codeHash.update(code);
+
+      let codeEncoded = encodeURIComponent(btoa(codeHash.array().reduce(
+        (a, b) => { return a + String.fromCharCode(b); }, '')));
+        
+      url += '&code_challenge_method=S256&code_challenge=' + codeEncoded;
     }
     
     if (idpName) {
