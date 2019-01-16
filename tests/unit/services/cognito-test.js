@@ -105,6 +105,15 @@ test('destroy timer', function(assert) {
   assert.notOk(get(subject, 'task'));
 });
 
+test('base64 URL encoding', function(assert) {
+  let subject = this.subject();
+
+  assert.equal(
+    'A-z_4ME',
+    subject._base64UrlEncoded('\x03\xec\xff\xe0\xc1')
+  );
+});
+
 test('get OAuth URL token', function(assert) {
   let subject = this.subject({
     hostedBase: 'https://test.auth.us-east-1.amazoncognito.com',
@@ -128,7 +137,7 @@ test('get OAuth URL code', function(assert) {
   assert.equal(oauthCode.length, 32);
 });
 
-test('get OAuth token URL', function(assert) {
+test('get OAuth token request', function(assert) {
   let subject = this.subject();
   // first we define the OAuth URL
   assert.ok(subject.getOAuthUrl('code', 'http://localhost:4200/login', 'IdP',
@@ -140,6 +149,6 @@ test('get OAuth token URL', function(assert) {
   assert.ok(req.formData.includes('code=abcd1234'));
   assert.ok(req.formData.includes('redirect_uri=http://localhost:4200/login'));
   let oauthCode = window.sessionStorage.getItem('ember-cognito.oauthCode');
-  assert.ok(req.formData.includes('code_verifier=' + encodeURIComponent(btoa(oauthCode))));
+  assert.ok(req.formData.includes('code_verifier=' + subject._base64UrlEncoded(oauthCode)));
   
 });

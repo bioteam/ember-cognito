@@ -86,6 +86,10 @@ export default Service.extend({
     }
   },
 
+  _base64UrlEncoded(data) {
+    return btoa(data).replace(/=+$/, "").replace(/\+/g, '-').replace(/\//g, '_');
+  },
+
   getOAuthUrl(responseType = 'code', redirectUri, idpName, scope) {
     let { hostedBase, clientId } = this.getProperties('hostedBase', 'clientId');
     let url = (
@@ -110,8 +114,8 @@ export default Service.extend({
       let codeHash = sha256.create();
       codeHash.update(code);
 
-      let codeEncoded = encodeURIComponent(btoa(codeHash.array().reduce(
-        (a, b) => { return a + String.fromCharCode(b); }, '')));
+      let codeEncoded = this._base64UrlEncoded(codeHash.array().reduce(
+        (a, b) => { return a + String.fromCharCode(b); }, ''));
         
       url += '&code_challenge_method=S256&code_challenge=' + codeEncoded;
     }
@@ -138,7 +142,7 @@ export default Service.extend({
           + '&code=' + code
           + '&client_id=' + clientId
           + '&redirect_uri=' + redirectUri
-          + '&code_verifier=' + encodeURIComponent(btoa(oauthCode))
+          + '&code_verifier=' + this._base64UrlEncoded(oauthCode)
       )
     }
   }
