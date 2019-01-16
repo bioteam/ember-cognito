@@ -117,13 +117,9 @@ export default Base.extend({
 
   _getTokensFromCode(code) {
     return new Promise((resolve, reject) => {
-      let formData = ("grant_type=authorization_code"
-                      + "&code=" + code
-                      + "&client_id=" + get(this, 'cognito.clientId')
-                      + "&redirect_uri=http://localhost:4200/login");
-      let url = get(this, 'cognito.hostedBase') + '/oauth2/token';
+      let tokenReq = get(this, 'cognito').getOAuthTokenRequest(code);
       let client = new XMLHttpRequest();
-      client.open("POST", url);
+      client.open("POST", tokenReq.url);
       client.responseType = "json";
       client.setRequestHeader('Content-type',
                               'application/x-www-form-urlencoded');
@@ -137,7 +133,7 @@ export default Base.extend({
           }
         }
       };
-      client.send(formData);
+      client.send(tokenReq.formData);
     });
   },
   

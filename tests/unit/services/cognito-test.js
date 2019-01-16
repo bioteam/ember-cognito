@@ -106,7 +106,10 @@ test('destroy timer', function(assert) {
 });
 
 test('get OAuth URL token', function(assert) {
-  let subject = this.subject();
+  let subject = this.subject({
+    hostedBase: 'https://test.auth.us-east-1.amazoncognito.com',
+    clientId: 'myDummyClientId'
+  });
   let url = subject.getOAuthUrl('token', 'http://localhost:4200/login',
                                 'IdP', 'email%20profile');
   assert.ok(url);
@@ -114,9 +117,27 @@ test('get OAuth URL token', function(assert) {
 });
 
 test('get OAuth URL code', function(assert) {
-  let subject = this.subject();
+  let subject = this.subject({
+    hostedBase: 'https://test.auth.us-east-1.amazoncognito.com',
+    clientId: 'myDummyClientId'
+  });
   let url = subject.getOAuthUrl('code', 'http://localhost:4200/login',
                                 'IdP', 'email%20profile');
   assert.ok(url);
   assert.equal(get(subject, 'oauthCode').length, 32);
+});
+
+test('get OAuth token URL', function(assert) {
+  let subject = this.subject();
+  // first we define the OAuth URL
+  assert.ok(subject.getOAuthUrl('code', 'http://localhost:4200/login', 'IdP',
+                                'email%20profile'));
+
+  // now make sure the token URL works
+  let req = subject.getOAuthTokenRequest('abcd1234');
+  assert.ok(req);
+  assert.ok(req.formData.includes('code=abcd1234'));
+  assert.ok(req.formData.includes('redirect_uri=http://localhost:4200/login'));
+  assert.ok(req.formData.includes('code_verifier=' + btoa(get(subject, 'oauthCode'))));
+  
 });

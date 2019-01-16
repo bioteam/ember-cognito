@@ -103,6 +103,8 @@ export default Service.extend({
         (a, b) => { return a + String.fromCharCode(b); },
         '');
       this.set('oauthCode', code);
+      this.set('redirectUri', redirectUri);
+      
       let code_hash = btoa(sha256(code));
       url += '&code_challenge_method=S256&code_challenge=' + code_hash;
     }
@@ -115,6 +117,22 @@ export default Service.extend({
     }
     
     return url;
+  },
+
+  getOAuthTokenRequest(code) {
+    let { hostedBase, clientId, redirectUri, oauthCode } = this.getProperties(
+      'hostedBase', 'clientId', 'redirectUri', 'oauthCode');
+    
+    return {
+      url: hostedBase + '/oauth2/token',
+      formData: (
+        'grant_type=authorization_code'
+          + '&code=' + code
+          + '&client_id=' + clientId
+          + '&redirect_uri=' + redirectUri
+          + '&code_verifier=' + btoa(oauthCode)
+      )
+    }
   }
   
 });
