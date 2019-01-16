@@ -104,3 +104,19 @@ test('destroy timer', function(assert) {
   });
   assert.notOk(get(subject, 'task'));
 });
+
+test('get OAuth URL token', function(assert) {
+  let subject = this.subject();
+  let url = subject.getOAuthUrl('token', 'http://localhost:4200/login',
+                                'IdP', 'email%20profile');
+  assert.ok(url);
+  assert.notOk(get(subject, 'oauthCode'));
+});
+
+test('get OAuth URL code', function(assert) {
+  let subject = this.subject();
+  let url = subject.getOAuthUrl('code', 'http://localhost:4200/login',
+                                'IdP', 'email%20profile');
+  assert.ok(url);
+  assert.equal(get(subject, 'oauthCode').length, 32);
+});

@@ -96,7 +96,12 @@ export default Service.extend({
         + '&state=notYetRandom'
     );
     if (responseType === 'code') {
-      let code = Math.random().toString(32);
+      // generate a random 32 byte string
+      let codeArray = new Uint8Array(32);
+      window.crypto.getRandomValues(codeArray);
+      let code = codeArray.reduce(
+        (a, b) => { return a + String.fromCharCode(b); },
+        '');
       this.set('oauthCode', code);
       let code_hash = btoa(sha256(code));
       url += '&code_challenge_method=S256&code_challenge=' + code_hash;

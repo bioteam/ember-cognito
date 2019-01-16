@@ -16,6 +16,16 @@ module.exports = {
             ]
           }
         };
+      },
+      'js-sha256': function() {
+        return {
+          vendor: {
+            srcDir: 'src',
+            include: [
+              'sha256.js'
+            ]
+          }
+        };
       }
     }
   },
@@ -24,6 +34,7 @@ module.exports = {
     app.import('vendor/amazon-cognito-identity-js/aws-cognito-sdk.js');
     app.import('vendor/amazon-cognito-identity-js/amazon-cognito-identity.min.js');
     app.import('vendor/shims/amazon-cognito-identity-js.js');
+    app.import('vendor/js-sha256/sha256.js');
     app.import('vendor/shims/js-sha256.js');
   }
 };
