@@ -140,6 +140,6 @@ test('get OAuth token URL', function(assert) {
   assert.ok(req.formData.includes('code=abcd1234'));
   assert.ok(req.formData.includes('redirect_uri=http://localhost:4200/login'));
   let oauthCode = window.sessionStorage.getItem('ember-cognito.oauthCode');
-  assert.ok(req.formData.includes('code_verifier=' + btoa(oauthCode)));
+  assert.ok(req.formData.includes('code_verifier=' + encodeURIComponent(btoa(oauthCode))));
   
 });

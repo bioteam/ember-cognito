@@ -105,7 +105,7 @@ export default Service.extend({
       window.sessionStorage.setItem('ember-cognito.oauthCode', code);
       window.sessionStorage.setItem('ember-cognito.redirectUri', redirectUri);
       
-      let code_hash = btoa(sha256(code));
+      let code_hash = encodeURIComponent(btoa(sha256(code)));
       url += '&code_challenge_method=S256&code_challenge=' + code_hash;
     }
     
@@ -131,7 +131,7 @@ export default Service.extend({
           + '&code=' + code
           + '&client_id=' + clientId
           + '&redirect_uri=' + redirectUri
-          + '&code_verifier=' + btoa(oauthCode)
+          + '&code_verifier=' + encodeURIComponent(btoa(oauthCode))
       )
     }
   }
