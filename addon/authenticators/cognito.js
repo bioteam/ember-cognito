@@ -150,6 +150,15 @@ export default Base.extend({
   },
 
   _handleQueryHash(/* params */) {
+    if (window.parsedQueryHash.state) {
+      let stateCode = window.sessionStorage.getItem('ember-cognito.stateCode');
+      if (window.parsedQueryHash.state !== stateCode) {
+        throw new Error('state as returned from Cognito'
+                        + ' (' + window.parsedQueryHash.state + ')'
+                        + ' does not match internal state'
+                        + ' (' + stateCode + ')');
+      }
+    }
     if (window.parsedQueryHash.code) {
       let that = this;
       return this._getTokensFromCode(window.parsedQueryHash.code)

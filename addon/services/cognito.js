@@ -90,25 +90,29 @@ export default Service.extend({
     return btoa(data).replace(/=+$/, "").replace(/\+/g, '-').replace(/\//g, '_');
   },
 
+  _randomString(length = 32) {
+    let array = new Uint8Array(length);
+    window.crypto.getRandomValues(array);
+    return array.reduce((a, b) => { return a + String.fromCharCode(b); }, '');
+  },
+
   getOAuthUrl(responseType = 'code', redirectUri, idpName, scope) {
     let { hostedBase, clientId } = this.getProperties('hostedBase', 'clientId');
+    let stateCode = this._base64UrlEncoded(this._randomString());
+    window.sessionStorage.setItem('ember-cognito.stateCode', stateCode);
     let url = (
       hostedBase + '/oauth2/authorize'
         + '?response_type=' + responseType
         + '&client_id=' + clientId
         + '&redirect_uri=' + redirectUri
-        + '&state=notYetRandom'
+        + '&state=' + stateCode
     );
     if (responseType === 'code') {
       window.sessionStorage.setItem('ember-cognito.redirectUri', redirectUri);
       let codeVerifier = window.sessionStorage.getItem('ember-cognito.oauthCodeVerifier');
       if (! codeVerifier) {
-        // generate a random 32 byte string
-        let codeArray = new Uint8Array(32);
-        window.crypto.getRandomValues(codeArray);
-        codeVerifier = this._base64UrlEncoded(codeArray.reduce(
-          (a, b) => { return a + String.fromCharCode(b); },
-          ''));
+        // generate a random 32 byte string and base64url-encode it
+        codeVerifier = this._base64UrlEncoded(this._randomString(32));
         window.sessionStorage.setItem('ember-cognito.oauthCodeVerifier', codeVerifier);
       }
       let codeHash = sha256.create();
