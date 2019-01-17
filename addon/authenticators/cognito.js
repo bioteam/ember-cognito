@@ -105,16 +105,6 @@ export default Base.extend({
     }, 'cognito:newPasswordRequired');
   },
 
-  _handleState(name, params) {
-    if (name === 'refresh') {
-      return this._handleRefresh(params);
-    } else if (name === 'newPasswordRequired') {
-      return this._handleNewPasswordRequired(params);
-    } else {
-      throw new Error('invalid state');
-    }
-  },
-
   _getTokensFromCode(code) {
     return new Promise((resolve, reject) => {
       let tokenReq = get(this, 'cognito').getOAuthTokenRequest(code);
@@ -159,9 +149,7 @@ export default Base.extend({
     }, 'cognito:authenticate');
   },
 
-  authenticate(params) {
-    let { username, password, state } = params;
-
+  _handleQueryHash(/* params */) {
     if (window.parsedQueryHash.code) {
       let that = this;
       return this._getTokensFromCode(window.parsedQueryHash.code)
@@ -170,7 +158,26 @@ export default Base.extend({
         });
     } else if (window.parsedQueryHash.access_token) {
       return this._handleParsedQueryHash(window.parsedQueryHash);
-    }    
+    } else {
+      return new Promise();
+    }
+  },
+  
+  _handleState(name, params) {
+    if (name === 'refresh') {
+      return this._handleRefresh(params);
+    } else if (name === 'newPasswordRequired') {
+      return this._handleNewPasswordRequired(params);
+    } else if (name === 'handleQueryHash') {
+      return this._handleQueryHash(params);
+    } else {
+      throw new Error('invalid state');
+    }
+  },
+
+  authenticate(params) {
+    let { username, password, state } = params;
+
     if (state) {
       return this._handleState(state.name, params);
     }
