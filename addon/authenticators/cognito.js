@@ -168,7 +168,7 @@ export default Base.extend({
     } else if (window.parsedQueryHash.access_token) {
       return this._handleParsedQueryHash(window.parsedQueryHash);
     } else {
-      return new Promise();
+      return Promise.resolve();
     }
   },
   
